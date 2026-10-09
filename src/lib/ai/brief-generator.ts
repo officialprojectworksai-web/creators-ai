@@ -205,9 +205,80 @@ export async function generateAIBrief(input: AIBriefInput): Promise<AIBriefOutpu
   }
 
   try {
-    // If Gemini key is available
-    if (process.env.GEMINI_API_KEY || process.env.AI_PROVIDER_API_KEY) {
-      const activeKey = process.env.GEMINI_API_KEY || process.env.AI_PROVIDER_API_KEY;
+    // 1. If OpenAI key (starts with sk-) or OPENAI_API_KEY
+    if (apiKey.startsWith('sk-') || process.env.OPENAI_API_KEY) {
+      const model = process.env.AI_MODEL || 'gpt-4o-mini';
+      const openAiKey = apiKey;
+
+      const systemPrompt = `You are the Lead Creative Director AI for CreatorOS, an AI Content Creator Marketplace.
+Convert the user's rough campaign brief request into a structured JSON object conforming strictly to this schema:
+{
+  "title": string,
+  "objective": string,
+  "industry": string,
+  "target_audience": string,
+  "creative_direction": string,
+  "visual_style": string,
+  "tone": string,
+  "content_types": string[],
+  "platforms": string[],
+  "aspect_ratios": string[],
+  "resolution": string,
+  "duration_seconds": number,
+  "deliverable_quantity": number,
+  "required_skills": string[],
+  "required_tools": string[],
+  "budget_min": number,
+  "budget_max": number,
+  "currency": string,
+  "commercial_usage_type": string,
+  "usage_duration": string,
+  "territories": string,
+  "exclusivity": string,
+  "ownership_requirements": string,
+  "disclosure_requirements": string,
+  "missing_information": string[],
+  "clarification_questions": string[]
+}
+Never hallucinate legal guarantees. If budget or deadline is missing, make reasonable estimates and list questions in missing_information.
+Respond ONLY with valid JSON.`;
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openAiKey}`,
+        },
+        body: JSON.stringify({
+          model: model.includes('gpt') ? model : 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: `Raw Campaign Prompt: ${validated.raw_prompt}${validated.preferred_brand_name ? `\nBrand Name: ${validated.preferred_brand_name}` : ''}` },
+          ],
+          response_format: { type: 'json_object' },
+          temperature: 0.7,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data?.choices?.[0]?.message?.content;
+        if (content) {
+          const parsed = JSON.parse(content);
+          const result = AIBriefOutputSchema.parse({
+            ...parsed,
+            generation_mode: 'llm',
+          });
+          return result;
+        }
+      } else {
+        console.warn('OpenAI API responded with status:', response.status);
+      }
+    }
+
+    // 2. If Gemini key is available
+    if (process.env.GEMINI_API_KEY || (!apiKey.startsWith('sk-') && apiKey)) {
+      const activeKey = process.env.GEMINI_API_KEY || apiKey;
       const model = process.env.AI_MODEL || 'gemini-1.5-flash';
       
       const systemPrompt = `You are the Lead Creative Director AI for CreatorOS, an AI Content Creator Marketplace.
@@ -259,19 +330,17 @@ Respond ONLY with valid JSON.`;
         }),
       });
 
-      if (!response.ok) {
-        throw new Error(`LLM API responded with ${response.status}`);
-      }
-
-      const data = await response.json();
-      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-      if (text) {
-        const parsed = JSON.parse(text);
-        const result = AIBriefOutputSchema.parse({
-          ...parsed,
-          generation_mode: 'llm',
-        });
-        return result;
+      if (response.ok) {
+        const data = await response.json();
+        const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (text) {
+          const parsed = JSON.parse(text);
+          const result = AIBriefOutputSchema.parse({
+            ...parsed,
+            generation_mode: 'llm',
+          });
+          return result;
+        }
       }
     }
 

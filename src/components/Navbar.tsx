@@ -67,7 +67,7 @@ export function Navbar({ onOpenAIBrief }: NavbarProps) {
           <nav className="hidden md:flex items-center gap-1">
             <Link
               href="/creators"
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 pathname.startsWith('/creators')
                   ? 'bg-white/10 text-white shadow-inner'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'
@@ -77,7 +77,7 @@ export function Navbar({ onOpenAIBrief }: NavbarProps) {
             </Link>
             <Link
               href="/campaigns"
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                 pathname.startsWith('/campaigns')
                   ? 'bg-white/10 text-white shadow-inner'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'
@@ -86,18 +86,28 @@ export function Navbar({ onOpenAIBrief }: NavbarProps) {
               Campaign Briefs
             </Link>
             <Link
+              href={role === 'creator' ? '/dashboard/profile' : '/dashboard/brand-profile'}
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                pathname.startsWith('/dashboard/profile') || pathname.startsWith('/dashboard/brand-profile')
+                  ? 'bg-violet-600/25 text-violet-300 border border-violet-500/30'
+                  : 'text-zinc-400 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              {role === 'creator' ? 'Creator Profile' : 'Brand Profile'}
+            </Link>
+            <Link
               href="/dashboard"
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all ${
-                pathname.startsWith('/dashboard')
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                pathname === '/dashboard'
                   ? 'bg-white/10 text-white shadow-inner'
                   : 'text-zinc-400 hover:text-white hover:bg-white/5'
               }`}
             >
-              Dashboard
+              Workspace
             </Link>
             <Link
               href="/admin/verification"
-              className={`px-3.5 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all flex items-center gap-1.5 ${
                 pathname.startsWith('/admin')
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   : 'text-zinc-400 hover:text-amber-300 hover:bg-amber-500/10'
