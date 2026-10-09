@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # CreatorOS AI — AI Content Creator Marketplace
 > **From Brief → Best Creator → Campaign → Content.**  
 > Built for **HacXLerate 2026 Challenge #2: AI Content Creator Marketplace**.
@@ -151,3 +152,6 @@ Use the Persona Switcher in the top navigation bar to test all user journeys ins
 ## 📄 License & Compliance
 
 CreatorOS AI enforces transparent workflow documentation, source prompt checks, and clear commercial rights buyout terms under FTC and EU AI Act disclosure standards.
+=======
+# creators-ai
+>>>>>>> 4fc240210ff42430f49be8da0ef7cb62161cb412
